@@ -1,30 +1,19 @@
 ﻿using System.Text;
 using System.Text.Json;
+using SearchRankingTool.Extensions;
 
 namespace SearchRankingTool.Utils;
 
 internal class AzureSearchHttpClient(Uri searchServiceUri, string apiKey)
 {
-    public async Task<T> SearchAsync<T>(string searchText)
+    public async Task<T> SearchAsync<T>(string searchText, SearchType searchType)
     {
+        searchText = ModifySearchText(searchText, searchType);
+
         var httpClient = new HttpClient();
         
         // Json Body to Post
-        var body = $$$"""
-                      {
-                        "count": true,
-                        "facets": ["themeId,count:60,sort:count", "releaseType"],
-                        "highlight": "content",
-                        "queryType": "semantic",
-                        "scoringProfile": "scoring-profile-1",
-                        "search": "{{{searchText}}}",
-                        "searchMode": "any",
-                        "select": "content,releaseSlug,releaseType,releaseVersionId,publicationSlug,published,summary,themeTitle,title",
-                        "skip": 0,
-                        "top": 10,
-                        "semanticConfiguration": "semantic-configuration-1"
-                      }
-                      """;
+        var body = BuildPayload(searchText, searchType);
 
         var message = new HttpRequestMessage(HttpMethod.Post, searchServiceUri)
         {
@@ -35,5 +24,72 @@ internal class AzureSearchHttpClient(Uri searchServiceUri, string apiKey)
         var httpResponseMessage = await httpClient.SendAsync(message);
         httpResponseMessage.EnsureSuccessStatusCode();
         return JsonSerializer.Deserialize<T>(await httpResponseMessage.Content.ReadAsStringAsync()) ?? throw new Exception("Could not deserialize response");
+    }
+
+    private string BuildPayload(string searchText, SearchType searchType)
+    {
+        var queryType = searchType.ToString().StartsWith("Semantic") ? "semantic" : "full";
+        var payload = $$$"""
+               {
+                 "count": true,
+                 "facets": ["themeId,count:60,sort:count", "releaseType"],
+                 "highlight": "content",
+                 "queryType": "{{{queryType}}}",
+                 "scoringProfile": "scoring-profile-1",
+                 "search": "{{{searchText}}}",
+                 "searchMode": "any",
+                 "select": "content,releaseSlug,releaseType,releaseVersionId,publicationSlug,published,summary,themeTitle,title",
+                 "skip": 0,
+                 "top": 10,
+                 "semanticConfiguration": "semantic-configuration-1"
+               }
+               """;
+        return payload;
+    }
+    
+    private string ModifySearchText(string s, SearchType searchType)
+    {
+        return searchType switch
+        {
+            SearchType.Semantic => s,
+            SearchType.SemanticSpellChecked => s,
+            SearchType.FullText => s,
+            SearchType.FullTextFuzzy2 => Fuzzy2(s),
+            SearchType.FullTextFuzzy3 => Fuzzy3(s),
+            SearchType.FullTextFuzzy2Wildcard => FuzzyAndWildcard(s),
+            SearchType.SemanticScoringProfile => s,
+            _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType, null)
+        };
+        
+        // term =>  termA~ OR termB~ OR... 
+        string Fuzzy2(string words) => 
+            words
+                .Split(" ")
+                .Select(word => word.Trim())
+                .Select(word => word.Length > 3 
+                    ? $"{word}~" 
+                    : word)
+                .Join(" OR ");
+        
+        // term =>  termA~3 OR termB~3 OR...
+        string Fuzzy3(string words) => 
+            words
+                .Split(" ")
+                .Select(word => word.Trim())
+                .Select(word => word.Length > 3 
+                    ? $"{word}~3" 
+            // $"{word}* OR {word}~" 
+                    : word)
+                .Join(" OR ");
+        
+        // term =>  termA* OR termA~ OR termB* OR termB~ OR... 
+        string FuzzyAndWildcard(string words) => 
+            words
+                .Split(" ")
+                .Select(word => word.Trim())
+                .Select(word => word.Length > 3 
+                    ? $"{word}* OR {word}~" 
+                    : word)
+                .Join(" OR ");
     }
 }

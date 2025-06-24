@@ -3,6 +3,7 @@
 internal class Runner(
     string url,
     string apikey,
+    SearchType searchType,
     Action<string>? output = null)
 {
     private readonly Action<string> _output = output ?? Console.WriteLine;
@@ -37,9 +38,9 @@ internal class Runner(
 
     private async Task RunSearch(string searchQuery, string expectedUrl)
     {
-        SearchService searchService = new(url, apikey, _output);
+        SearchService searchService = new(url, apikey, searchType, _output);
 
-        var rank = await searchService.Search(searchQuery, expectedUrl);
+        var rank = await searchService.Search(searchQuery.Trim(), expectedUrl);
 
         _output($"\"{searchQuery}\",\"{expectedUrl}\",{rank}");
     }

@@ -7,11 +7,12 @@ var app = CoconaApp.Create();
 app.AddCommand("search", async (
         [Argument("azureUrl", Description = "Azure search url")]string azureUrl,
         [Argument("apikey", Description = "Azure search url")]string apikey,
+        [Argument("searchType", Description = "Search type")]SearchType searchType,
         [Argument("query", Description = "The search query to run. Enclose in quotes.")]string searchQuery, 
         [Argument("urlToRank", Description = "The url to rank. Include https://")]string urlToRank)
     =>
 {
-    var runner = new Runner(azureUrl, apikey);
+    var runner = new Runner(azureUrl, apikey, searchType);
     await runner.RunSingleQuery(
         searchQuery,
         urlToRank
@@ -21,11 +22,12 @@ app.AddCommand("search", async (
 app.AddCommand("csv", async (
     [Argument("azureUrl", Description = "Azure search url")]string azureUrl,
     [Argument("apikey", Description = "Azure search url")]string apikey,
+    [Argument("searchType", Description = "Search type")]SearchType searchType,
     [Argument("input", Description = "The filename of the csv file to process")]string inputFilename,
     [Option(name:"output", Description = "The results will be written to this filename. If not specified, an output name will be generated automatically.")]string? outputFilename) =>
 {
     var sb = new StringBuilder();
-    var runner = new Runner(azureUrl, apikey, s => sb.AppendLine(s));
+    var runner = new Runner(azureUrl, apikey, searchType, s => sb.AppendLine(s));
     await runner.RunFile(inputFilename);
     
     // Save to results file

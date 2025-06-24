@@ -4,7 +4,7 @@ using SearchRankingTool.Extensions;
 
 namespace SearchRankingTool.Utils;
 
-public class SearchService(string url, string apikey, Action<string> output)
+internal class SearchService(string url, string apikey, SearchType searchType, Action<string> output)
 {
     private AzureSearchHttpClient BuildSearchClient()
     {
@@ -16,7 +16,7 @@ public class SearchService(string url, string apikey, Action<string> output)
     {
         var client = BuildSearchClient();
 
-        var response = await client.SearchAsync<Welcome>(searchText);
+        var response = await client.SearchAsync<Welcome>(searchText, searchType);
 
         int rank = response.Values
             .WithIndex()
@@ -45,16 +45,12 @@ public class SearchService(string url, string apikey, Action<string> output)
     
     private void OutputClosestMatch(string searchText, string expectedUri, Value[] responseValues)
     {
-        var closestMatch = responseValues
-            .WithIndex()
-            .OrderByDescending(x => Fuzz.Ratio(expectedUri, BuildUrlFromSearchResult(x.Item)))
-            .First();
-
         output($"Search for {searchText} not found.");
-        output($"Closest fuzzy match: Rank {closestMatch.Index+1}:");
+        foreach (var responseValue in responseValues.WithIndex())
+        {
+            output($"{responseValue.Index + 1}. {responseValue.Item.PublicationSlug}");
+        }
         output($"Expected   : {expectedUri}");
-        output($"Closest    : {BuildUrlFromSearchResult(closestMatch.Item)}");
-        output($"#1 Top Ranked for {searchText}: {BuildUrlFromSearchResult(responseValues.First())}");
         output(string.Empty);
     }
 }

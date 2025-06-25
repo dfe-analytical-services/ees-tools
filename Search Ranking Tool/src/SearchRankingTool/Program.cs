@@ -12,7 +12,7 @@ app.AddCommand("search", async (
         [Argument("urlToRank", Description = "The url to rank. Include https://")]string urlToRank)
     =>
 {
-    var runner = new Runner(azureUrl, apikey, searchType);
+    var runner = new Runner(new Uri(azureUrl), apikey, searchType);
     await runner.RunSingleQuery(
         searchQuery,
         urlToRank
@@ -27,7 +27,7 @@ app.AddCommand("csv", async (
     [Option(name:"output", Description = "The results will be written to this filename. If not specified, an output name will be generated automatically.")]string? outputFilename) =>
 {
     var sb = new StringBuilder();
-    var runner = new Runner(azureUrl, apikey, searchType, s => sb.AppendLine(s));
+    var runner = new Runner(new Uri(azureUrl), apikey, searchType, s => sb.AppendLine(s));
     await runner.RunFile(inputFilename);
     
     // Save to results file

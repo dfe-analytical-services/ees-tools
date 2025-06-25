@@ -1,15 +1,14 @@
-﻿using FuzzySharp;
-using QuickType;
+﻿using QuickType;
 using SearchRankingTool.Extensions;
 
 namespace SearchRankingTool.Utils;
 
-internal class SearchService(string url, string apikey, SearchType searchType, Action<string> output)
+internal class SearchService(Uri url, string apikey, SearchType searchType, Action<string> output)
 {
     private AzureSearchHttpClient BuildSearchClient()
     {
         // Create a client
-        return new AzureSearchHttpClient(new Uri(url), apikey);
+        return new AzureSearchHttpClient(url, apikey);
     }
 
     public async Task<int> Search(string searchText, string expectedUri)

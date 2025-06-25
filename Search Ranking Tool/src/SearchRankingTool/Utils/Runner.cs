@@ -1,7 +1,7 @@
 ﻿namespace SearchRankingTool.Utils;
 
 internal class Runner(
-    string url,
+    Uri url,
     string apikey,
     SearchType searchType,
     Action<string>? output = null)

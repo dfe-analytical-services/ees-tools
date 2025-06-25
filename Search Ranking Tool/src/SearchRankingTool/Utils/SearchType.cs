@@ -8,5 +8,5 @@ internal enum SearchType
     FullTextFuzzy2,
     FullTextFuzzy3,
     FullTextFuzzy2Wildcard,
-    SemanticScoringProfile,
+    SemanticScoringProfile2,
 }

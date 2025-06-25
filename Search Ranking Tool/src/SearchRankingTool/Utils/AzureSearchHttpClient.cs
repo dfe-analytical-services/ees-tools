@@ -47,6 +47,10 @@ internal class AzureSearchHttpClient(Uri searchServiceUri, string apiKey)
                  "semanticConfiguration": "semantic-configuration-1",
               """
             : string.Empty;
+
+        var scoringProfile = searchType == SearchType.SemanticScoringProfile2
+            ? "scoring-profile-2"
+            : "scoring-profile-1";
         
         var payload = $$$"""
                {
@@ -55,7 +59,7 @@ internal class AzureSearchHttpClient(Uri searchServiceUri, string apiKey)
                  {{{optionalSpellCheck}}}
                  "facets": ["themeId,count:60,sort:count", "releaseType"],
                  "highlight": "content",
-                 "scoringProfile": "scoring-profile-1",
+                 "scoringProfile": {{{scoringProfile}}},
                  "searchMode": "any",
                  "select": "content,releaseSlug,releaseType,releaseVersionId,publicationSlug,published,summary,themeTitle,title",
                  "top": 10,
@@ -76,7 +80,7 @@ internal class AzureSearchHttpClient(Uri searchServiceUri, string apiKey)
             SearchType.FullTextFuzzy2 => Fuzzy2(s),
             SearchType.FullTextFuzzy3 => Fuzzy3(s),
             SearchType.FullTextFuzzy2Wildcard => FuzzyAndWildcard(s),
-            SearchType.SemanticScoringProfile => s,
+            SearchType.SemanticScoringProfile2 => s,
             _ => throw new ArgumentOutOfRangeException(nameof(searchType), searchType, null)
         };
         

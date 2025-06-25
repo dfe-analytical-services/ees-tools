@@ -44,7 +44,8 @@ internal class SearchService(Uri url, string apikey, SearchType searchType, Acti
     
     private void OutputClosestMatch(string searchText, string expectedUri, Value[] responseValues)
     {
-        output($"Search for {searchText} not found.");
+        output($"Search for \"{searchText}\" not found.");
+        output($"Number of search results: {responseValues.Length}");
         foreach (var responseValue in responseValues.WithIndex())
         {
             output($"{responseValue.Index + 1}. {responseValue.Item.PublicationSlug}");

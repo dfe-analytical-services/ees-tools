@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.WebUtilities;
 using SearchRankingTool.Extensions;
 
 namespace SearchRankingTool.Utils;
@@ -15,7 +16,11 @@ internal class AzureSearchHttpClient(Uri searchServiceUri, string apiKey)
         // Json Body to Post
         var body = BuildPayload(searchText, searchType);
 
-        var message = new HttpRequestMessage(HttpMethod.Post, searchServiceUri)
+        // Append API version to URL
+        // 2025-05-01-preview -- support for spellcheck
+        var searchServiceUriWithApiVersion = QueryHelpers.AddQueryString(searchServiceUri.OriginalString, "api-version", "2025-05-01-preview");;
+
+        var message = new HttpRequestMessage(HttpMethod.Post, new Uri(searchServiceUriWithApiVersion))
         {
             Content = new StringContent(body, Encoding.UTF8, "application/json")
         };
@@ -28,20 +33,34 @@ internal class AzureSearchHttpClient(Uri searchServiceUri, string apiKey)
 
     private string BuildPayload(string searchText, SearchType searchType)
     {
-        var queryType = searchType.ToString().StartsWith("Semantic") ? "semantic" : "full";
+        var isSemanticSearch = searchType.ToString().StartsWith("Semantic");
+        var queryType = isSemanticSearch ? "semantic" : "full";
+        var optionalSpellCheck = searchType == SearchType.SemanticSpellChecked 
+            ? """
+                "speller": "lexicon",
+                "queryLanguage": "en-us",
+              """ 
+            : string.Empty;
+        
+        var optionalSemanticConfiguration = isSemanticSearch
+            ? """
+                 "semanticConfiguration": "semantic-configuration-1",
+              """
+            : string.Empty;
+        
         var payload = $$$"""
                {
-                 "count": true,
+                 "search": "{{{searchText}}}",
+                 "queryType": "{{{queryType}}}",
+                 {{{optionalSpellCheck}}}
                  "facets": ["themeId,count:60,sort:count", "releaseType"],
                  "highlight": "content",
-                 "queryType": "{{{queryType}}}",
                  "scoringProfile": "scoring-profile-1",
-                 "search": "{{{searchText}}}",
                  "searchMode": "any",
                  "select": "content,releaseSlug,releaseType,releaseVersionId,publicationSlug,published,summary,themeTitle,title",
-                 "skip": 0,
                  "top": 10,
-                 "semanticConfiguration": "semantic-configuration-1"
+                 {{{optionalSemanticConfiguration}}}
+                 "count": true
                }
                """;
         return payload;

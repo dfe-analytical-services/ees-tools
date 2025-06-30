@@ -24,7 +24,7 @@ internal class Runner(
         var data = CsvReader.GetCsvDataFromFile(filename);
 
         // Skip header
-        foreach (var inputs in data.Skip(1))
+        foreach (var inputs in data)
         {
             var searchQuery = inputs[0];
             var expectedUrl = inputs[1];

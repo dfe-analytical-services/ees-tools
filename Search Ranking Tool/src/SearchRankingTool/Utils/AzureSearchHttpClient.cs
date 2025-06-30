@@ -59,7 +59,7 @@ internal class AzureSearchHttpClient(Uri searchServiceUri, string apiKey)
                  {{{optionalSpellCheck}}}
                  "facets": ["themeId,count:60,sort:count", "releaseType"],
                  "highlight": "content",
-                 "scoringProfile": {{{scoringProfile}}},
+                 "scoringProfile": "{{{scoringProfile}}}",
                  "searchMode": "any",
                  "select": "content,releaseSlug,releaseType,releaseVersionId,publicationSlug,published,summary,themeTitle,title",
                  "top": 10,

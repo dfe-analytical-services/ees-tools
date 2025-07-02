@@ -60,4 +60,19 @@ Command line Example:
 | Argument | Description                                                            | Example       |
 |----------|------------------------------------------------------------------------|---------------|
 | input    | the filename of a csv file containing search query / url to rank pairs | "searches.csv" |
-| output | [optional] the filename of a text file into which the results will be written | "searches-results.txt|
+
+The input csv file contains a list of query, url pairs, one per line, separated by a comma
+
+```text
+dfe attendance data,https://explore-education-statistics.service.gov.uk/find-statistics/pupil-attendance-in-schools
+schools pupils and their characteristics,https://explore-education-statistics.service.gov.uk/find-statistics/school-pupils-and-their-characteristics
+```
+
+Each query will be run through the search service, and the specified url found and the rank returned.
+
+The results from these queries are placed into two files along side the input file:
+- one file contains the input query, url and rank
+- the other file contains an output of useful information such as for any searches where the expected url was not in the top 10, it will report what the top ten results were.
+
+The files will be named based on the input filename, the search type and the output type.
+e.g. for a semantic search with input file _searches.csv_, the output files are called _searches-semantic-results.csv_ and _searches-semantic-report.txt_.

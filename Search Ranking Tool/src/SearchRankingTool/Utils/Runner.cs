@@ -4,9 +4,11 @@ internal class Runner(
     Uri url,
     string apikey,
     SearchType searchType,
-    Action<string>? output = null)
+    Action<string>? csvOutput = null,
+    Action<string>? reportOutput = null)
 {
-    private readonly Action<string> _output = output ?? Console.WriteLine;
+    private readonly Action<string> _csvOutput = csvOutput ?? Console.WriteLine;
+    private readonly Action<string> _reportOutput = reportOutput ?? Console.WriteLine;
 
     public async Task RunSingleQuery(string searchQuery, string expectedUrl)
     {
@@ -34,14 +36,14 @@ internal class Runner(
         }
     }
 
-    private void OutputHeader() => _output($"query,expected_url,rank");
+    private void OutputHeader() => _csvOutput($"query,expected_url,rank");
 
     private async Task RunSearch(string searchQuery, string expectedUrl)
     {
-        SearchService searchService = new(url, apikey, searchType, _output);
+        SearchService searchService = new(url, apikey, searchType, _reportOutput);
 
         var rank = await searchService.Search(searchQuery.Trim(), expectedUrl);
 
-        _output($"\"{searchQuery}\",\"{expectedUrl}\",{rank}");
+        _csvOutput($"\"{searchQuery}\",\"{expectedUrl}\",{rank}");
     }
 }

@@ -5,7 +5,7 @@ internal static class CsvReader
     public static IEnumerable<string[]> GetCsvDataFromFile(string filename)
     {
         var fileInfo = new FileInfo(filename);
-        if (!fileInfo.Exists) throw new FileNotFoundException();
+        if (!fileInfo.Exists) throw new FileNotFoundException($"File {filename} not found", fileInfo.FullName);
 
         using var streamReader = fileInfo.OpenText();
         while(true)

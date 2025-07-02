@@ -3,7 +3,11 @@ using SearchRankingTool.Extensions;
 
 namespace SearchRankingTool.Utils;
 
-internal class SearchService(Uri url, string apikey, SearchType searchType, Action<string> output)
+internal class SearchService(
+    Uri url,
+    string apikey,
+    SearchType searchType,
+    Action<string> reportOutput)
 {
     private AzureSearchHttpClient BuildSearchClient()
     {
@@ -44,13 +48,13 @@ internal class SearchService(Uri url, string apikey, SearchType searchType, Acti
     
     private void OutputClosestMatch(string searchText, string expectedUri, Value[] responseValues)
     {
-        output($"Search for \"{searchText}\" not found.");
-        output($"Number of search results: {responseValues.Length}");
+        reportOutput($"Search for \"{searchText}\" not found.");
+        reportOutput($"Number of search results: {responseValues.Length}");
         foreach (var responseValue in responseValues.WithIndex())
         {
-            output($"{responseValue.Index + 1}. {responseValue.Item.PublicationSlug}");
+            reportOutput($"{responseValue.Index + 1}. {responseValue.Item.PublicationSlug}");
         }
-        output($"Expected   : {expectedUri}");
-        output(string.Empty);
+        reportOutput($"Expected   : {expectedUri}");
+        reportOutput(string.Empty);
     }
 }

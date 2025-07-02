@@ -50,12 +50,12 @@ Command line Example:
 | url to rank | Typically, this is the url of the result we consider to be the top ranked. The tool will tell us how this page actually ranked. | "https://explore-education-statistics.service.gov.uk/find-statistics/special-educational-needs-in-england" |
 
 ### CSV File Mode
-Command: **_file_**
+Command: **_csv_**
 
 ```text
 Command line Example:
 
-.\SearchRankingTool.exe search "https://mysearchservicename-ees-srch.search.windows.net/indexes('myindex')/docs/search.post.search" "myapikey" FullText searches.csv
+.\SearchRankingTool.exe csv "https://mysearchservicename-ees-srch.search.windows.net/indexes('myindex')/docs/search.post.search" "myapikey" FullText searches.csv
 ```
 | Argument | Description                                                            | Example       |
 |----------|------------------------------------------------------------------------|---------------|

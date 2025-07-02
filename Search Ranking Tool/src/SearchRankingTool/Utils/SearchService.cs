@@ -21,7 +21,7 @@ internal class SearchService(
 
         var response = await client.SearchAsync<Welcome>(searchText, searchType);
 
-        int rank = response.Values
+        int oneBasedRank = response.Values
             .WithIndex()
             .Where(indexedSearchResult => IsMatch(indexedSearchResult.Item, expectedUri))
             .Select<(Value Item, int Index), int?>(x => x.Index + 1 /* one based */)
@@ -30,10 +30,10 @@ internal class SearchService(
 
         
          // OUTPUT - Not found information
-         if (rank == 11)
-               OutputClosestMatch(searchText, expectedUri, response.Values);
+         if (oneBasedRank > 1)
+               OutputHigherMatches(searchText, expectedUri, response.Values, oneBasedRank);
         
-        return rank;
+        return oneBasedRank;
     }
 
     private bool IsMatch(Value searchResult, string expectedUri)
@@ -46,12 +46,12 @@ internal class SearchService(
 
     private string BuildUrlFromSearchResult(Value searchResult) => $"https://explore-education-statistics.service.gov.uk/find-statistics/{searchResult.PublicationSlug}";
     
-    private void OutputClosestMatch(string searchText, string expectedUri, Value[] responseValues)
+    private void OutputHigherMatches(string searchText, string expectedUri, Value[] responseValues, int oneBasedRank)
     {
-        reportOutput($"Search for \"{searchText}\" not found.");
-        reportOutput($"Number of search results: {responseValues.Length}");
+        reportOutput($"Search for \"{searchText}\" ranked {oneBasedRank}.");
         foreach (var responseValue in responseValues.WithIndex())
         {
+            if (responseValue.Index + 1 == oneBasedRank) break; // Report up to the result we were looking for.
             reportOutput($"{responseValue.Index + 1}. {responseValue.Item.PublicationSlug}");
         }
         reportOutput($"Expected   : {expectedUri}");

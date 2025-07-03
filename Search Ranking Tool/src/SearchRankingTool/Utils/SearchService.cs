@@ -22,6 +22,7 @@ internal class SearchService(
         var response = await client.SearchAsync<Welcome>(searchText, searchType);
 
         int oneBasedRank = response.Values
+            .OrderByDescending(result => result.SearchRerankerScore)
             .WithIndex()
             .Where(indexedSearchResult => IsMatch(indexedSearchResult.Item, expectedUri))
             .Select<(Value Item, int Index), int?>(x => x.Index + 1 /* one based */)
